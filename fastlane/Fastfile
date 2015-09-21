@@ -54,9 +54,9 @@ def lock_exec(lockname = "global", &block)
 end
 
 def lock_pods(&block)
-    lock_exec(lockname: "cocoapods") { block.call }
+    lock_exec("cocoapods") { block.call }
 end
 
 def lock_simulator(&block)
-    lock_exec(lockname: "simulator") { block.call }
+    lock_exec("simulator") { block.call }
 end
