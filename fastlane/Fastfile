@@ -1,0 +1,54 @@
+def lock_exec(name = "global", &block)
+  # wait 30 seconds between checks
+  lock_recheck_sleep_time = 30
+
+  # wait max 2 hours
+  max_waited_time = 60 * 2 * (2 * lock_recheck_sleep_time)
+
+  lock_file_name = "/tmp/fastlane_#{name}.lock"
+  current_pid = Process.pid
+
+  Fastlane::Helper.log.info "[LOCKER] Locking execution context '#{name}' -> '#{lock_file_name}' ..."
+
+  waited_time = 0
+  loop do
+    # exit the loop if:
+    # - lock_file does not exist
+    # or - waited more than 2h, that process must be hung somewhere
+    break if !File.exist?(lock_file_name) || waited_time >= max_waited_time
+
+    # get the current locking process pid from the lock file
+    locking_pid = Integer(File.read(lock_file_name))
+
+    # check whether the process still exists
+    # break the loop if it doesn't exits
+    begin
+      Process.getpgid(locking_pid)
+    rescue Errno::ESRCH
+      File.delete(lock_file_name)
+      break
+    end
+
+    tries = 1 + waited_time / lock_recheck_sleep_time
+    Fastlane::Helper.log.info "[LOCKER] Waiting #{lock_recheck_sleep_time} seconds for execution context '#{name}' to unlock. Try ##{tries}."
+
+    # wait a little bit, then try again
+    sleep lock_recheck_sleep_time
+    waited_time += lock_recheck_sleep_time
+  end
+
+  # create the lock file with the current process pid
+  File.open(lock_file_name, "w") do |f|
+    f.write(current_pid)
+    f.close
+  end
+
+  Fastlane::Helper.log.info "[LOCKER] Locked execution context '#{name}' -> '#{lock_file_name}'."
+
+  # execute the block
+  block.call
+
+  # remove the lock file
+  File.delete(lock_file_name)
+  Fastlane::Helper.log.info "[LOCKER] Unlocked execution context '#{name}' -> '#{lock_file_name}'."
+end
