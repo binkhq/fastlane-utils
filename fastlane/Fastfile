@@ -1,14 +1,14 @@
-def lock_exec(name = "global", &block)
+def lock_exec(lockname = "global", &block)
   # wait 30 seconds between checks
   lock_recheck_sleep_time = 30
 
   # wait max 2 hours
   max_waited_time = 60 * 2 * (2 * lock_recheck_sleep_time)
 
-  lock_file_name = "/tmp/fastlane_#{name}.lock"
+  lock_file_name = "/tmp/fastlane_#{lockname}.lock"
   current_pid = Process.pid
 
-  Fastlane::Helper.log.info "[LOCKER] Locking execution context '#{name}' -> '#{lock_file_name}' ..."
+  Fastlane::Helper.log.info "[LOCKER] Locking execution context '#{lockname}' -> '#{lock_file_name}' ..."
 
   waited_time = 0
   loop do
@@ -30,7 +30,7 @@ def lock_exec(name = "global", &block)
     end
 
     tries = 1 + waited_time / lock_recheck_sleep_time
-    Fastlane::Helper.log.info "[LOCKER] Waiting #{lock_recheck_sleep_time} seconds for execution context '#{name}' to unlock. Try ##{tries}."
+    Fastlane::Helper.log.info "[LOCKER] Waiting #{lock_recheck_sleep_time} seconds for execution context '#{lockname}' to unlock. Try ##{tries}."
 
     # wait a little bit, then try again
     sleep lock_recheck_sleep_time
@@ -43,12 +43,20 @@ def lock_exec(name = "global", &block)
     f.close
   end
 
-  Fastlane::Helper.log.info "[LOCKER] Locked execution context '#{name}' -> '#{lock_file_name}'."
+  Fastlane::Helper.log.info "[LOCKER] Locked execution context '#{lockname}' -> '#{lock_file_name}'."
 
   # execute the block
   block.call
 
   # remove the lock file
   File.delete(lock_file_name)
-  Fastlane::Helper.log.info "[LOCKER] Unlocked execution context '#{name}' -> '#{lock_file_name}'."
+  Fastlane::Helper.log.info "[LOCKER] Unlocked execution context '#{lockname}' -> '#{lock_file_name}'."
+end
+
+def lock_pods(&block)
+    lock_exec(lockname: "cocoapods") { block.call }
+end
+
+def lock_simulator(&block)
+    lock_exec(lockname: "simulator") { block.call }
 end
