@@ -60,3 +60,29 @@ end
 def lock_simulator(&block)
     lock_exec("simulator") { block.call }
 end
+
+def unlockkeychain
+  unlock_keychain(path: "iosbuilder", password: "#{ENV["KEYCHAIN_PASSWORD"]}")
+end
+
+def warmup_simulator(name: "iPhone 6", os_version: "latest")
+  sim_os_ver = os_version
+
+  if sim_os_ver == "latest"
+    sim_os_ver=`xcrun simctl list runtimes | tail -n1 | cut -d" " -f2 | tr -d '\n'`
+  end
+
+  #e.g. iPhone 6 (8.3 Simulator)
+  sim_name="#{name} (#{sim_os_ver} Simulator)"
+
+  Fastlane::Helper.log.info "[SIMULATOR-HELPER] Starting #{sim_name}"
+  `xcrun instruments -w "#{sim_name}" >/dev/null 2>&1 || true`
+
+  sleep 15
+end
+
+def close_simulator
+  Fastlane::Helper.log.info "[SIMULATOR-HELPER] Closing the simulator"
+  `osascript -e 'tell app "iOS Simulator" to quit'`
+end
+
