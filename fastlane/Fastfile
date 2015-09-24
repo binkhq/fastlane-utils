@@ -69,7 +69,7 @@ def warmup_simulator(name: "iPhone 6", os_version: "latest")
   sim_os_ver = os_version
 
   if sim_os_ver == "latest"
-    sim_os_ver=`xcrun simctl list runtimes | tail -n1 | cut -d" " -f2 | tr -d '\n'`
+    sim_os_ver=`xcrun simctl list runtimes | grep iOS | tail -n1 | cut -d" " -f2 | tr -d '\n'`
   end
 
   #e.g. iPhone 6 (8.3 Simulator)
