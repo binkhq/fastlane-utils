@@ -65,24 +65,10 @@ def unlockkeychain
   unlock_keychain(path: "iosbuilder", password: "#{ENV["KEYCHAIN_PASSWORD"]}")
 end
 
-def warmup_simulator(name: "iPhone 6", os_version: "latest")
-  sim_os_ver = os_version
-  xcode_ver = `xcodebuild -version | grep Xcode | cut -d' ' -f2 | tr -d '\n'`
-
-  if sim_os_ver == "latest"
-    sim_os_ver = `xcrun simctl list runtimes | grep iOS | tail -n1 | cut -d" " -f2 | tr -d '\n'`
-  end
-
-  #e.g. iPhone 6 (8.3)
-  sim_name = "#{name} (#{sim_os_ver})"
-
-  #for xcode 6 the sim name is different
-  if xcode_ver =~ /^6.*/
-    sim_name = "#{name} (#{sim_os_ver} Simulator)"
-  end
-
-  Fastlane::Helper.log.info "[SIMULATOR-HELPER] Starting #{sim_name}"
-  `xcrun instruments -w "#{sim_name}" >/dev/null 2>&1 || true`
+def warmup_simulator(device_type)
+  sim_device_type = "com.apple.CoreSimulator.SimDeviceType.#{device_type}"
+  Fastlane::Helper.log.info "[SIMULATOR-HELPER] Starting #{device_type}"
+  `ios-sim --devicetypeid "#{sim_device_type}" start  >/dev/null 2>&1 || true`
 
   sleep 15
 end
