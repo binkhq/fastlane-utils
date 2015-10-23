@@ -65,7 +65,7 @@ def unlockkeychain
   unlock_keychain(path: "iosbuilder", password: "#{ENV["KEYCHAIN_PASSWORD"]}")
 end
 
-def warmup_simulator(device_type = "iPhone-6, 9.0")
+def warmup_simulator(device_type = "iPhone-6, 9.1")
   sim_device_type = "com.apple.CoreSimulator.SimDeviceType.#{device_type}"
   Fastlane::Helper.log.info "[SIMULATOR-HELPER] Starting #{device_type}"
   `ios-sim start --devicetypeid "#{sim_device_type}" >/dev/null 2>&1 || true`
