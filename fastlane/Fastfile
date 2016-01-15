@@ -79,6 +79,7 @@ end
 
 def close_simulator
   Fastlane::Helper.log.info "[SIMULATOR-HELPER] Closing the simulator"
+  `osascript -e 'tell app "Simulator" to quit'`
   `osascript -e 'tell app "iOS Simulator" to quit'`
 end
 
