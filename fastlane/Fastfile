@@ -8,7 +8,7 @@ def lock_exec(lockname = "global", &block)
   lock_file_name = "/tmp/fastlane_#{lockname}.lock"
   current_pid = Process.pid
 
-  Fastlane::Helper.log.info "[LOCKER] Locking execution context '#{lockname}' -> '#{lock_file_name}' ..."
+  Fastlane::UI.message("[LOCKER] Locking execution context '#{lockname}' -> '#{lock_file_name}' ...")
 
   waited_time = 0
   loop do
@@ -30,7 +30,7 @@ def lock_exec(lockname = "global", &block)
     end
 
     tries = 1 + waited_time / lock_recheck_sleep_time
-    Fastlane::Helper.log.info "[LOCKER] Waiting #{lock_recheck_sleep_time} seconds for execution context '#{lockname}' to unlock. Try ##{tries}."
+    Fastlane::UI.message("[LOCKER] Waiting #{lock_recheck_sleep_time} seconds for execution context '#{lockname}' to unlock. Try ##{tries}.")
 
     # wait a little bit, then try again
     sleep lock_recheck_sleep_time
@@ -43,14 +43,14 @@ def lock_exec(lockname = "global", &block)
     f.close
   end
 
-  Fastlane::Helper.log.info "[LOCKER] Locked execution context '#{lockname}' -> '#{lock_file_name}'."
+  Fastlane::UI.message("[LOCKER] Locked execution context '#{lockname}' -> '#{lock_file_name}'.")
 
   # execute the block
   block.call
 
   # remove the lock file
   File.delete(lock_file_name)
-  Fastlane::Helper.log.info "[LOCKER] Unlocked execution context '#{lockname}' -> '#{lock_file_name}'."
+  Fastlane::UI.message("[LOCKER] Unlocked execution context '#{lockname}' -> '#{lock_file_name}'.")
 end
 
 def lock_pods(&block)
@@ -67,7 +67,7 @@ end
 
 def warmup_simulator(device_type = "iPhone-6, 9.3")
   sim_device_type = "com.apple.CoreSimulator.SimDeviceType.#{device_type}"
-  Fastlane::Helper.log.info "[SIMULATOR-HELPER] Starting #{device_type}"
+  Fastlane::UI.message("[SIMULATOR-HELPER] Starting #{device_type}")
   `ios-sim start --devicetypeid "#{sim_device_type}" >/dev/null 2>&1 || true`
 
   sleep 15
@@ -78,7 +78,7 @@ def uninstall_simapp(appid)
 end
 
 def close_simulator
-  Fastlane::Helper.log.info "[SIMULATOR-HELPER] Closing the simulator"
+  Fastlane::UI.message("[SIMULATOR-HELPER] Closing the simulator")
   `osascript -e 'tell app "Simulator" to quit'`
   `osascript -e 'tell app "iOS Simulator" to quit'`
 end
